@@ -1,11 +1,13 @@
 /*
 Author: Peter O'Donohue
 Creation Date: 10/05/17
-Modification Date: 10/05/17
+Modification Date: 10/10/17
 Description: FILL IN
 */
 
 #include <iostream>
+#include <string>
+#include <sstream>
 #include <vector>
 #include <algorithm>
 
@@ -19,7 +21,7 @@ struct Node
 	Node(int n = 0)
 	{
 		id = n;
-		minRequests4Raise = n;
+		minRequests4Raise = -1;
 	}
 };
 
@@ -65,7 +67,7 @@ void Tree::print(Node* ptr, int level)
 	if (ptr != nullptr)
 	{
 		for (int i = 0; i < level; ++i)
-			cout << "     ";
+			cout << "   ";
 		cout << ptr->id << endl;
 		for (Node* foo: ptr->underlings)
 			print(foo, level + 1);
@@ -77,18 +79,19 @@ Node* Tree::find(int target)
 {
 	Node* treePtr = root;
 	Node* searchPtr = nullptr;
-	searchPtr = find(treePtr, target);
-	return searchPtr;
+searchPtr = find(treePtr, target);
+return searchPtr;
 }
 
 Node* Tree::find(Node* root, int target)
 {
 	Node* workerPtr = nullptr;
+
 	if (root == nullptr || root->id == target)
 		return root;
 	else
 	{
-		for (Node* employee: root->underlings)
+		for (Node* employee : root->underlings)
 		{
 			workerPtr = find(employee, target);
 			if (workerPtr != nullptr)
@@ -122,6 +125,11 @@ Forest::Forest()
 	trees.push_back(firstTree);
 }
 
+void Forest::clear()
+{
+	trees.erase(trees.begin(), trees.end());
+}
+
 Node* Forest::find(int target)
 {
 	Node* nodeFound = nullptr;
@@ -142,6 +150,7 @@ void Forest::print()
 
 void Forest::insert(int boss, int underling)
 {
+	Node *tempRoot = nullptr;
 	Node* bossPtr = nullptr;
 	Node* workerPtr = nullptr;
 	bossPtr = find(boss);
@@ -153,24 +162,68 @@ void Forest::insert(int boss, int underling)
 		newTree.insertWorker(underling);
 		trees.push_back(newTree);
 	}
-
 	else if (bossPtr != nullptr && workerPtr == nullptr)
 	{
 		bossPtr->underlings.push_back(new Node(underling));
+	}
+	else if (bossPtr == nullptr && workerPtr != nullptr)
+	{
+		Tree newTree(boss);
+		tempRoot = newTree.getRoot();
+		tempRoot->underlings.push_back(workerPtr);
+		tempRoot = nullptr;
+	}
+	else if (bossPtr != nullptr && workerPtr != nullptr)
+	{
+		int treeCounter = 0;
+		int tempRoot = -1;
+		Tree forestWalker = trees[0];
+		Node* foo;
+		foo = forestWalker.getRoot();
+		tempRoot = foo->id;
+
+		bossPtr->underlings.push_back(workerPtr);
+		while (tempRoot != underling)
+		{
+			++treeCounter;
+			forestWalker = trees[treeCounter];
+			foo = forestWalker.getRoot();
+			tempRoot = foo->id;
+		}
+		trees.erase(trees.begin() + treeCounter);
 	}
 }
 
 int main()
 {
 	Forest company;
-	int boss = 0;
-	int employee = 0;
-	for (int i = 0; i < 9; ++i)
+	int storeBoss = 0;
+	int threshhold = 0;
+	int numEmployees = 0;
+	string companyInfo;
+	vector<int> bosses;
+	istringstream inputBuffer;
+	do 
 	{
-		cin >> boss >> employee;
-		company.insert(boss, employee);
-	}
-	company.print();
-	system("pause");
+		getline(cin, companyInfo);
+		inputBuffer.clear();
+		inputBuffer.str(companyInfo);
+		inputBuffer >> numEmployees;
+		inputBuffer >> threshhold;
+		companyInfo.erase();
+		getline(cin, companyInfo);
+		inputBuffer.clear();
+		inputBuffer.str(companyInfo);
+		while (inputBuffer >> storeBoss)
+			bosses.push_back(storeBoss);
+		for (int i = 0; i < numEmployees; ++i)
+		{
+			company.insert(bosses[i], i+1);
+		}
+		company.print();
+		company.clear();
+		bosses.clear();
+		cin >> numEmployees >> threshhold;
+	} while (numEmployees != 0 && threshhold != 0);
 	return 0;
 }
