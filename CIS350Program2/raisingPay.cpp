@@ -40,10 +40,12 @@ private:
 	Node* root;
 	Node* find(Node* root, int target);
 	void print(Node* ptr, int level);
+	void compMinNumRequests(Node* workerPtr, float treshold);
 public:
 	Tree();
 	Tree(int id);
 	void printTree();
+	void compMinNumRequests(float threshold);
 	Node* find(int target);
 	Node* getRoot();
 };
@@ -73,6 +75,40 @@ void Tree::print(Node* ptr, int level)
 			print(foo, level + 1);
 	}
 	return;
+}
+void Tree::compMinNumRequests(float threshold)
+{
+	compMinNumRequests(getRoot(), threshold);
+}
+void Tree::compMinNumRequests(Node* workerPtr, float threshold)
+{
+	int totalMinNumReq = 0;
+	int minNumWorkers = 0;
+	float numWorkers = 0;
+	Node* workerWalker = workerPtr;
+	vector<int> employeeMins;
+
+	if (workerWalker->underlings.size() == 0)
+	{
+		workerWalker->minRequests4Raise = 1;
+	}
+	else
+	{
+		for (Node* employee : workerWalker->underlings)
+			compMinNumRequests(employee, threshold);
+		numWorkers = workerWalker->underlings.size();
+		numWorkers *= threshold;
+		minNumWorkers = ceil(numWorkers);
+		for (Node* employee : workerWalker->underlings)
+		{
+			employeeMins.push_back(employee->minRequests4Raise);
+		}
+		sort(employeeMins.begin(), employeeMins.end());
+		for (int i = 0; i < minNumWorkers; ++i)
+			totalMinNumReq += employeeMins[i];
+		workerWalker->minRequests4Raise = totalMinNumReq;
+
+	}
 }
 Node* Tree::find(int target)
 {
@@ -113,6 +149,8 @@ public:
 	void clear();
 	void print();
 	void insert(int boss, int underling);
+	void compMinNumRequests(float threshhold);
+	int getMinNumReq();
 	Node* find(int target);
 };
 
@@ -189,13 +227,21 @@ void Forest::insert(int boss, int underling)
 		trees.erase(trees.begin() + treeCounter);
 	}
 }
-
+int Forest::getMinNumReq()
+{
+	Node* tempRoot = trees[0].getRoot();
+	return tempRoot->minRequests4Raise;
+}
+void Forest::compMinNumRequests(float threshold)
+{
+		trees[0].compMinNumRequests(threshold);
+}
 int main()
 {
 	Forest company;
 	int storeBoss = 0;
-	int threshhold = 0;
 	int numEmployees = 0;
+	float threshold = 0.0;
 	string companyInfo;
 	vector<int> bosses;
 	istringstream inputBuffer;
@@ -205,7 +251,8 @@ int main()
 		inputBuffer.clear();
 		inputBuffer.str(companyInfo);
 		inputBuffer >> numEmployees;
-		inputBuffer >> threshhold;
+		inputBuffer >> threshold;
+		threshold *= .01;
 		companyInfo.erase();
 		getline(cin, companyInfo);
 		inputBuffer.clear();
@@ -217,9 +264,11 @@ int main()
 			company.insert(bosses[i], i + 1);
 		}
 		company.print();
+		company.compMinNumRequests(threshold);
+		cout << company.getMinNumReq() << endl;
 		company.clear();
 		bosses.clear();
-		cin >> numEmployees >> threshhold;
-	} while (numEmployees != 0 && threshhold != 0);
+		cin >> numEmployees >> threshold;
+	} while (numEmployees != 0 && threshold != 0);
 	return 0;
 }
