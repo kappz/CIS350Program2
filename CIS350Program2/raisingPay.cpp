@@ -1,8 +1,17 @@
 /*
 Author: Peter O'Donohue
 Creation Date: 10/05/17
-Modification Date: 10/10/17
-Description: FILL IN
+Modification Date: 10/23/17
+Description: This program computes and prints the minimum number of employee requests required 
+for all employees of a particular company to receive a raise. This program operates under the
+assumption that every employee has a single boss, and a boss only sends a raise request up the 
+line if the percentage of employees underneath them making requests is greater than X%. On the 
+first line after executing the program, input the number of employees(minus the owner), as well 
+as the threshold percentage required for a boss to push a raise request up the line. On the next 
+line input all the bosses, where every boss Y names the boss of employee Y. The program will then
+print a tree representing the hierarchical structure of the company, with the last output line 
+representing the minimum number of workers required for the owner to give everyone a raise. When 
+finished, input 0 0 to exit the program.
 */
 
 #include <iostream>
@@ -34,7 +43,6 @@ private:
 public:
 	Tree();
 	Tree(int id);
-	void insertWorker(int id);
 	void printTree();
 	Node* find(int target);
 	Node* getRoot();
@@ -44,16 +52,9 @@ Tree::Tree()
 {
 	root = nullptr;
 }
-
 Tree::Tree(int id)
 {
 	root = new Node(id);
-}
-
-void Tree::insertWorker(int id)
-{
-	Node* workerNode = new Node(id);
-	root->underlings.push_back(workerNode);
 }
 void Tree::printTree()
 {
@@ -61,7 +62,6 @@ void Tree::printTree()
 	Node* walker = root;
 	print(walker, level);
 }
-
 void Tree::print(Node* ptr, int level)
 {
 	if (ptr != nullptr)
@@ -69,20 +69,18 @@ void Tree::print(Node* ptr, int level)
 		for (int i = 0; i < level; ++i)
 			cout << "   ";
 		cout << ptr->id << endl;
-		for (Node* foo: ptr->underlings)
+		for (Node* foo : ptr->underlings)
 			print(foo, level + 1);
 	}
 	return;
 }
-
 Node* Tree::find(int target)
 {
 	Node* treePtr = root;
 	Node* searchPtr = nullptr;
-searchPtr = find(treePtr, target);
-return searchPtr;
+	searchPtr = find(treePtr, target);
+	return searchPtr;
 }
-
 Node* Tree::find(Node* root, int target)
 {
 	Node* workerPtr = nullptr;
@@ -100,7 +98,6 @@ Node* Tree::find(Node* root, int target)
 	}
 	return workerPtr;
 }
-
 Node* Tree::getRoot()
 {
 	Node* rootPtr = root;
@@ -124,12 +121,11 @@ Forest::Forest()
 	Tree firstTree(0);
 	trees.push_back(firstTree);
 }
-
 void Forest::clear()
 {
+	// FIX, MEM LEAK
 	trees.erase(trees.begin(), trees.end());
 }
-
 Node* Forest::find(int target)
 {
 	Node* nodeFound = nullptr;
@@ -142,12 +138,10 @@ Node* Forest::find(int target)
 	}
 	return nodeFound;
 }
-
 void Forest::print()
 {
 	trees[0].printTree();
 }
-
 void Forest::insert(int boss, int underling)
 {
 	Node *tempRoot = nullptr;
@@ -159,7 +153,9 @@ void Forest::insert(int boss, int underling)
 	if (bossPtr == nullptr && workerPtr == nullptr)
 	{
 		Tree newTree(boss);
-		newTree.insertWorker(underling);
+		workerPtr = new Node(underling);
+		Node* treeRoot = newTree.getRoot();
+		treeRoot->underlings.push_back(workerPtr);
 		trees.push_back(newTree);
 	}
 	else if (bossPtr != nullptr && workerPtr == nullptr)
@@ -203,7 +199,7 @@ int main()
 	string companyInfo;
 	vector<int> bosses;
 	istringstream inputBuffer;
-	do 
+	do
 	{
 		getline(cin, companyInfo);
 		inputBuffer.clear();
@@ -218,7 +214,7 @@ int main()
 			bosses.push_back(storeBoss);
 		for (int i = 0; i < numEmployees; ++i)
 		{
-			company.insert(bosses[i], i+1);
+			company.insert(bosses[i], i + 1);
 		}
 		company.print();
 		company.clear();
