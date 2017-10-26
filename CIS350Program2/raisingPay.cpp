@@ -18,6 +18,7 @@ finished, input 0 0 to exit the program.
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <fstream>
 
 using namespace std;
 
@@ -180,49 +181,54 @@ void Forest::print()
 }
 void Forest::insert(int boss, int underling)
 {
+	int treeCounter = 0;
+	int tempRootId = -1;
+	Tree newTree(0);
 	Node *tempRoot = nullptr;
-	Node* bossPtr = nullptr;
-	Node* workerPtr = nullptr;
-	bossPtr = find(boss);
-	workerPtr = find(underling);
+	Node* bossPtr = find(boss);
+	Node* workerPtr = find(underling);
 
 	if (bossPtr == nullptr && workerPtr == nullptr)
 	{
-		Tree newTree(boss);
+		bossPtr = newTree.getRoot();
+		bossPtr->id = boss;
 		workerPtr = new Node(underling);
-		Node* treeRoot = newTree.getRoot();
-		treeRoot->underlings.push_back(workerPtr);
+		bossPtr->underlings.push_back(workerPtr);
 		trees.push_back(newTree);
+		bossPtr = nullptr;
+		workerPtr = nullptr;
 	}
 	else if (bossPtr != nullptr && workerPtr == nullptr)
 	{
 		bossPtr->underlings.push_back(new Node(underling));
+		bossPtr = nullptr;
 	}
 	else if (bossPtr == nullptr && workerPtr != nullptr)
 	{
-		Tree newTree(boss);
-		tempRoot = newTree.getRoot();
-		tempRoot->underlings.push_back(workerPtr);
-		tempRoot = nullptr;
+		bossPtr = newTree.getRoot();
+		bossPtr->id = boss;
+		bossPtr->underlings.push_back(workerPtr);
+		trees.push_back(newTree);
+		bossPtr = nullptr;
+		workerPtr = nullptr;
 	}
 	else if (bossPtr != nullptr && workerPtr != nullptr)
 	{
-		int treeCounter = 0;
-		int tempRoot = -1;
-		Tree forestWalker = trees[0];
-		Node* foo;
-		foo = forestWalker.getRoot();
-		tempRoot = foo->id;
-
+		newTree = trees[0];
+		tempRoot = newTree.getRoot();
+		tempRootId = tempRoot->id;
 		bossPtr->underlings.push_back(workerPtr);
-		while (tempRoot != underling)
+
+		while (tempRootId != underling)
 		{
 			++treeCounter;
-			forestWalker = trees[treeCounter];
-			foo = forestWalker.getRoot();
-			tempRoot = foo->id;
+			newTree = trees[treeCounter];
+			tempRoot = newTree.getRoot();
+			tempRootId = tempRoot->id;
 		}
 		trees.erase(trees.begin() + treeCounter);
+		bossPtr = nullptr;
+		workerPtr = nullptr;
 	}
 }
 int Forest::getMinNumReq()
@@ -234,13 +240,17 @@ void Forest::compMinNumRequests(float threshold)
 {
 	trees[0].compMinNumRequests(threshold);
 }
+void testCaseTen();
 int main()
 {
-	Forest company;
 	int storeBoss = 0;
 	int numEmployees = 0;
 	float threshold = 0.0;
 	vector<int> bosses;
+	Forest company;
+//	ifstream inputFile;
+	
+//	inputFile.open("testCases.txt");
 	cin >> numEmployees >> threshold;
 	do
 	{
@@ -255,7 +265,7 @@ int main()
 		}
 
 		threshold *= .01;
-		//      company.print();
+//		company.print();
 		company.compMinNumRequests(threshold);
 		cout << company.getMinNumReq() << endl;
 		company.clear();
@@ -263,5 +273,24 @@ int main()
 
 		cin >> numEmployees >> threshold;
 	} while (!(numEmployees == 0 && threshold == 0));
+//	inputFile.close();
+	
+//	testCaseTen();
+//	system("pause");
 	return 0;
+}
+
+//test 1000 employees
+void testCaseTen()
+{
+	Forest foo;
+	for (int i = 0; i < 1000; ++i)
+		{
+		if (i != 1)
+			foo.insert(i, i + 1);
+		if (i == 0)
+			foo.insert(i, i + 2);
+		}
+	foo.compMinNumRequests(0);
+	cout << foo.getMinNumReq() << endl;
 }
