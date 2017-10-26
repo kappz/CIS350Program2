@@ -1,22 +1,21 @@
 /*
 Author: Peter O'Donohue
 Creation Date: 10/05/17
-Modification Date: 10/23/17
-Description: This program computes and prints the minimum number of employee requests required 
+Modification Date: 10/26/17
+Description: This program computes and prints the minimum number of employee requests required
 for all employees of a particular company to receive a raise. This program operates under the
-assumption that every employee has a single boss, and a boss only sends a raise request up the 
-line if the percentage of employees underneath them making requests is greater than X%. On the 
-first line after executing the program, input the number of employees(minus the owner), as well 
-as the threshold percentage required for a boss to push a raise request up the line. On the next 
+assumption that every employee has a single boss, and a boss only sends a raise request up the
+line if the percentage of employees underneath them making requests is greater than X%. On the
+first line after executing the program, input the number of employees(minus the owner), as well
+as the threshold percentage required for a boss to push a raise request up the line. On the next
 line input all the bosses, where every boss Y names the boss of employee Y. The program will then
-print a tree representing the hierarchical structure of the company, with the last output line 
-representing the minimum number of workers required for the owner to give everyone a raise. When 
+print a tree representing the hierarchical structure of the company, with the last output line
+representing the minimum number of workers required for the owner to give everyone a raise. When
 finished, input 0 0 to exit the program.
 */
 
 #include <iostream>
 #include <string>
-#include <sstream>
 #include <vector>
 #include <algorithm>
 
@@ -161,8 +160,7 @@ Forest::Forest()
 }
 void Forest::clear()
 {
-	// FIX, MEM LEAK
-	trees.erase(trees.begin(), trees.end());
+	trees.clear();
 }
 Node* Forest::find(int target)
 {
@@ -234,7 +232,7 @@ int Forest::getMinNumReq()
 }
 void Forest::compMinNumRequests(float threshold)
 {
-		trees[0].compMinNumRequests(threshold);
+	trees[0].compMinNumRequests(threshold);
 }
 int main()
 {
@@ -242,33 +240,28 @@ int main()
 	int storeBoss = 0;
 	int numEmployees = 0;
 	float threshold = 0.0;
-	string companyInfo;
 	vector<int> bosses;
-	istringstream inputBuffer;
+	cin >> numEmployees >> threshold;
 	do
 	{
-		getline(cin, companyInfo);
-		inputBuffer.clear();
-		inputBuffer.str(companyInfo);
-		inputBuffer >> numEmployees;
-		inputBuffer >> threshold;
-		threshold *= .01;
-		companyInfo.erase();
-		getline(cin, companyInfo);
-		inputBuffer.clear();
-		inputBuffer.str(companyInfo);
-		while (inputBuffer >> storeBoss)
+		for (int i = 0; i < numEmployees; ++i)
+		{
+			cin >> storeBoss;
 			bosses.push_back(storeBoss);
+		}
 		for (int i = 0; i < numEmployees; ++i)
 		{
 			company.insert(bosses[i], i + 1);
 		}
-		company.print();
+
+		threshold *= .01;
+		//      company.print();
 		company.compMinNumRequests(threshold);
 		cout << company.getMinNumReq() << endl;
 		company.clear();
 		bosses.clear();
+
 		cin >> numEmployees >> threshold;
-	} while (numEmployees != 0 && threshold != 0);
+	} while (!(numEmployees == 0 && threshold == 0));
 	return 0;
 }
