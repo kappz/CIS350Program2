@@ -195,30 +195,25 @@ void Forest::insert(int boss, int underling)
 		workerPtr = new Node(underling);
 		bossPtr->underlings.push_back(workerPtr);
 		trees.push_back(newTree);
-		bossPtr = nullptr;
-		workerPtr = nullptr;
 	}
-	else if (bossPtr != nullptr && workerPtr == nullptr)
+	else if (workerPtr == nullptr)
 	{
 		bossPtr->underlings.push_back(new Node(underling));
-		bossPtr = nullptr;
 	}
-	else if (bossPtr == nullptr && workerPtr != nullptr)
+	else if (workerPtr != nullptr)
 	{
-		bossPtr = newTree.getRoot();
-		bossPtr->id = boss;
-		bossPtr->underlings.push_back(workerPtr);
-		trees.push_back(newTree);
-		bossPtr = nullptr;
-		workerPtr = nullptr;
-	}
-	else if (bossPtr != nullptr && workerPtr != nullptr)
-	{
+		if (bossPtr == nullptr)
+		{
+			bossPtr = newTree.getRoot();
+			bossPtr->id = boss;
+			bossPtr->underlings.push_back(workerPtr);
+			trees.push_back(newTree);
+		}
+		else
+			bossPtr->underlings.push_back(workerPtr);
 		newTree = trees[0];
 		tempRoot = newTree.getRoot();
 		tempRootId = tempRoot->id;
-		bossPtr->underlings.push_back(workerPtr);
-
 		while (tempRootId != underling)
 		{
 			++treeCounter;
@@ -227,8 +222,6 @@ void Forest::insert(int boss, int underling)
 			tempRootId = tempRoot->id;
 		}
 		trees.erase(trees.begin() + treeCounter);
-		bossPtr = nullptr;
-		workerPtr = nullptr;
 	}
 }
 int Forest::getMinNumReq()
@@ -248,7 +241,7 @@ int main()
 	float threshold = 0.0;
 	vector<int> bosses;
 	Forest company;
-//	ifstream inputFile;
+	ifstream inputFile;
 	
 //	inputFile.open("testCases.txt");
 	cin >> numEmployees >> threshold;
